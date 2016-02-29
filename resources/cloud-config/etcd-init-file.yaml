@@ -1,0 +1,16 @@
+
+  - path: /opt/bin/etcd-init.sh
+    permissions: 0700
+    owner: root
+    content: |
+      #!/bin/bash
+
+      # TODO this would be a good candidate for a Lambda service
+      
+      # dyamically create/join the etcd cluster by querying autoscaling group
+      # see https://github.com/dockerage/etcd-aws-cluster
+      image=dockerage/etcd-aws-cluster
+      /usr/bin/docker run -v /etc/sysconfig/:/etc/sysconfig/ $image /etcd-aws-cluster
+      
+      # upload etcd initial-cluster urls to s3 bucket for worker cluster's etcd_proxy
+      /usr/bin/docker run -e S3BUCKET=s3://AWS-ACCOUNT-CLUSTER-NAME-cloudinit -v /etc/sysconfig/:/etc/sysconfig/ $image /etcd-aws-proxy
